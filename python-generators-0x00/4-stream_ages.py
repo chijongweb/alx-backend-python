@@ -17,7 +17,7 @@ def stream_user_ages():
             yield age
 
     except Error as e:
-        print(f"❌ Error streaming user ages: {e}")
+        print(f" Error streaming user ages: {e}")
     finally:
         if connection.is_connected():
             cursor.close()
@@ -39,7 +39,7 @@ def compute_average_age():
         return
 
     average_age = total_age / count
-    print(f"✅ Average age of users: {average_age:.2f}")
+    print(f" Average age of users: {average_age:.2f}")
 
 
 # Example usage:
