@@ -10,7 +10,7 @@ from client import GithubOrgClient
 
 
 class TestGithubOrgClient(unittest.TestCase):
-    """Unit tests for GithubOrgClient.org method."""
+    """Unit tests for GithubOrgClient."""
 
     @parameterized.expand([
         ("google", {"login": "google"}),
@@ -28,3 +28,11 @@ class TestGithubOrgClient(unittest.TestCase):
         mock_get_json.assert_called_once_with(
             f"https://api.github.com/orgs/{org_name}"
         )
+
+    def test_public_repos_url(self):
+        """Test the _public_repos_url property."""
+        payload = {"repos_url": "https://api.github.com/orgs/google/repos"}
+
+        with patch("client.GithubOrgClient.org", return_value=payload):
+            client = GithubOrgClient("google")
+            self.assertEqual(client._public_repos_url, payload["repos_url"])
