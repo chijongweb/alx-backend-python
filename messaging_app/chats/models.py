@@ -12,9 +12,9 @@ class User(AbstractUser):
     """
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    # Explicitly add email and password fields (though inherited from AbstractUser)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=128)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)  # Added phone_number
 
     # first_name, last_name, username, etc. inherited from AbstractUser
 
@@ -38,8 +38,8 @@ class Message(models.Model):
     message_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
-    content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
+    message_body = models.TextField()  # renamed from content
+    sent_at = models.DateTimeField(auto_now_add=True)  # renamed from timestamp
 
     def __str__(self):
-        return f"{self.sender.username}: {self.content[:20]}"
+        return f"{self.sender.username}: {self.message_body[:20]}"
