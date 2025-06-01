@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import Conversation, Message, User
@@ -11,9 +11,10 @@ class ConversationViewSet(viewsets.ModelViewSet):
     """
     queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['participants__username']
 
     def create(self, request, *args, **kwargs):
-        # Create new conversation with participants
         participants_ids = request.data.get('participants', [])
         if not participants_ids:
             return Response(
@@ -35,9 +36,11 @@ class MessageViewSet(viewsets.ModelViewSet):
     """
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['timestamp']
+    ordering = ['timestamp']  # Default ordering
 
     def create(self, request, *args, **kwargs):
-        # Send message to an existing conversation
         conversation_id = request.data.get('conversation')
         sender_id = request.data.get('sender')
         content = request.data.get('message_body')
