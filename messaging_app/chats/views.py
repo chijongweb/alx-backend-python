@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -17,7 +16,10 @@ class ConversationViewSet(viewsets.ModelViewSet):
         # Create new conversation with participants
         participants_ids = request.data.get('participants', [])
         if not participants_ids:
-            return Response({"error": "Participants list is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Participants list is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         conversation = Conversation.objects.create()
         conversation.participants.set(participants_ids)
@@ -41,18 +43,26 @@ class MessageViewSet(viewsets.ModelViewSet):
         content = request.data.get('message_body')
 
         if not conversation_id or not sender_id or not content:
-            return Response({"error": "conversation, sender, and message_body are required fields."},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "conversation, sender, and message_body are required fields."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             conversation = Conversation.objects.get(conversation_id=conversation_id)
         except Conversation.DoesNotExist:
-            return Response({"error": "Conversation not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Conversation not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         try:
             sender = User.objects.get(user_id=sender_id)
         except User.DoesNotExist:
-            return Response({"error": "Sender not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Sender not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         message = Message.objects.create(
             conversation=conversation,
