@@ -34,20 +34,24 @@ class MessageViewSet(viewsets.ModelViewSet):
     """
     ViewSet for listing and sending messages to a conversation.
     """
-    queryset = Message.objects.all()
     serializer_class = MessageSerializer
+    permission_classes = [IsParticipantOfConversation]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['timestamp']
     ordering = ['timestamp']  # Default ordering
 
+    def get_queryset(self):
+        # Return only messages from conversations where the request user is a participant
+        user = self.request.user
+        return Message.objects.filter(conversation__participants=user)
+
     def create(self, request, *args, **kwargs):
         conversation_id = request.data.get('conversation')
-        sender_id = request.data.get('sender')
         content = request.data.get('message_body')
 
-        if not conversation_id or not sender_id or not content:
+        if not conversation_id or not content:
             return Response(
-                {"error": "conversation, sender, and message_body are required fields."},
+                {"error": "conversation and message_body are required fields."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -59,13 +63,15 @@ class MessageViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        try:
-            sender = User.objects.get(user_id=sender_id)
-        except User.DoesNotExist:
+        # Check if the user is a participant of the conversation
+        if request.user not in conversation.participants.all():
             return Response(
-                {"error": "Sender not found."},
-                status=status.HTTP_404_NOT_FOUND
+                {"error": "You are not a participant of this conversation."},
+                status=status.HTTP_403_FORBIDDEN
             )
+
+        # Use the authenticated user as the sender
+        sender = request.user
 
         message = Message.objects.create(
             conversation=conversation,
