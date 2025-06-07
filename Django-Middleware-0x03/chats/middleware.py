@@ -1,18 +1,24 @@
-import datetime
-from django.http import HttpResponseForbidden
+from datetime import datetime
+import logging
 
-class RestrictAccessByTimeMiddleware:
+# Configure a logger for requests
+logger = logging.getLogger('request_logger')
+handler = logging.FileHandler('requests.log')
+formatter = logging.Formatter('%(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
+class RequestLoggingMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        # Get current server time (hour in 24h format)
-        current_hour = datetime.datetime.now().hour
+        # Get user info - if not authenticated, use 'AnonymousUser'
+        user = request.user if request.user.is_authenticated else 'AnonymousUser'
+        
+        # Log the datetime, user, and request path
+        logger.info(f"{datetime.now()} - User: {user} - Path: {request.path}")
 
-        # Restrict access if current time is NOT between 18:00 (6PM) and 21:00 (9PM)
-        if not (18 <= current_hour < 21):
-            return HttpResponseForbidden("Access to the chat is only allowed between 6 PM and 9 PM.")
-
-        # Otherwise continue processing the request
         response = self.get_response(request)
         return response
