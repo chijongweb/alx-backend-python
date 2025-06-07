@@ -6,6 +6,7 @@ from .serializers import ConversationSerializer, MessageSerializer
 from .permissions import IsParticipantOfConversation
 from rest_framework.permissions import IsAuthenticated
 from .pagination import MessagePagination
+from django_filters.rest_framework import DjangoFilterBackend
 
 class ConversationViewSet(viewsets.ModelViewSet):
     """
