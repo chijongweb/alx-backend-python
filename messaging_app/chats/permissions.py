@@ -14,8 +14,7 @@ class IsParticipantOfConversation(permissions.BasePermission):
         return request.user and request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        """
-        Called for detail views (e.g. update, delete).
-        Assumes `obj.conversation` has a ManyToMany relation like `participants`.
-        """
+        if request.method in ["GET", "POST", "PUT", "PATCH", "DELETE"]:
+            return request.user in obj.conversation.participants.all()
+        
         return request.user in obj.conversation.participants.all()
