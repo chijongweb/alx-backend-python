@@ -137,13 +137,12 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
-
-    'DEFAULT_PAGINATION_CLASS': 'chats.pagination.MessagePagination',
-    'PAGE_SIZE': 20,
-
-    # Enable filtering backend
+    'DEFAULT_PAGINATION_CLASS': 'chats.pagination.MessagePagination',  # <-- Add this
+    'PAGE_SIZE': 20,  # Optional fallback
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.OrderingFilter',
+        'rest_framework.filters.SearchFilter',
     ],
+
 }

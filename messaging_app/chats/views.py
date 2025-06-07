@@ -36,9 +36,11 @@ class MessageViewSet(viewsets.ModelViewSet):
     """
     serializer_class = MessageSerializer
     permission_classes = [IsParticipantOfConversation]
-    filter_backends = [filters.OrderingFilter]
+    pagination_class = MessagePagination
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_class = MessageFilter
     ordering_fields = ['timestamp']
-    ordering = ['timestamp']  # Default ordering
+    ordering = ['timestamp']
 
     def get_queryset(self):
         # Return only messages from conversations where the request user is a participant
