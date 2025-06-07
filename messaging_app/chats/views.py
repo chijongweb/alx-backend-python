@@ -7,6 +7,7 @@ from .permissions import IsParticipantOfConversation
 from rest_framework.permissions import IsAuthenticated
 from .pagination import MessagePagination
 from django_filters.rest_framework import DjangoFilterBackend
+from .filters import MessageFilter
 
 class ConversationViewSet(viewsets.ModelViewSet):
     """
