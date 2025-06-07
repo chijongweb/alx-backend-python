@@ -8,10 +8,10 @@ class MessagePagination(PageNumberPagination):
 
     def get_paginated_response(self, data):
         return Response({
-            'count': self.page.paginator.count,        # total number of messages
-            'next': self.get_next_link(),              # URL to next page
-            'previous': self.get_previous_link(),      # URL to previous page
-            'results': data                            # paginated results
+            'count': self.page.paginator.count,        
+            'next': self.get_next_link(),              
+            'previous': self.get_previous_link(),      
+            'results': data                            
         })
 
 
