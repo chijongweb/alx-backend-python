@@ -52,9 +52,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'chats.middleware.RestrictAccessByTimeMiddleware',
-     'chats.middleware.OffensiveLanguageMiddleware', 
+    'chats.middleware.OffensiveLanguageMiddleware', 
     'chats.middleware.RequestLoggingMiddleware',
     'chats.middleware.RolePermissionMiddleware',
+    'chats.middleware.RequestLoggingMiddleware',
+    
 ]
 
 ROOT_URLCONF = 'Django_Middleware_Project.urls'
