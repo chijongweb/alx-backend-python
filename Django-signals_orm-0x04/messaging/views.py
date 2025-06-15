@@ -1,49 +1,56 @@
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from django.contrib.auth.models import User
-from .models import Message
-from .forms import MessageForm  # Ensure this form exists
+from .models import Message, Notification, MessageHistory
+from .serializers import UserSerializer, MessageSerializer, NotificationSerializer, MessageHistorySerializer
+from rest_framework.response import Response
+from django.http import JsonResponse
+from .managers import UnreadMessagesManager
+from django.views.decorators.cache import cache_page
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    @action(detail=True, methods=['delete'], url_path='custom-delete')
+    def delete_user(self, request, pk=None):
+        user = self.get_object()
+        user.delete()
+        return Response({"message": "User deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
-@login_required
-def delete_user(request):
-    """Logs out and deletes the current logged-in user."""
-    user = request.user
-    logout(request)
-    user.delete()
-    return redirect('home')
+class MessageViewSet(viewsets.ModelViewSet):
+    serializer_class = MessageSerializer
+
+    def get_queryset(self):
+        return Message.objects.filter(sender=self.request.user)
+
+    @method_decorator(cache_page(60))
+    def get_conversation(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
-@login_required
-def send_message(request, receiver_id):
-    """Send a message from the logged-in user to the specified receiver."""
-    receiver = get_object_or_404(User, id=receiver_id)
-    
-    if request.method == 'POST':
-        form = MessageForm(request.POST)
-        if form.is_valid():
-            message = form.save(commit=False)
-            # Assign sender as current user here:
-            message.sender = request.user
-            message.receiver = receiver
-            message.save()
-            return redirect('inbox')
-    else:
-        form = MessageForm()
-    
-    return render(request, 'messaging/send_message.html', {'form': form, 'receiver': receiver})
+    @action(detail=False, methods=['get'])
+    def unread(self, request):
+        unread_messages = Message.unread.unread_for_user(request.user).only('sender_id', 'content', 'timestamp').select_related('sender')
+        serializer = self.get_serializer(unread_messages, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def inbox(request):
+            messages = Message.objects.filter(sender=request.user).select_related('sender', 'receiver').prefetch_related('replies')
+            serializer = MessageSerializer(messages, many=True)
+            return JsonResponse(serializer.data, safe=False)
 
 
-@login_required
-def inbox(request):
-    """
-    Display inbox messages where the logged-in user is the receiver,
-    including threaded replies, optimized with select_related and prefetch_related.
-    """
-    messages = (
-        Message.objects.filter(receiver=request.user, parent_message__isnull=True)
-        .select_related('sender', 'receiver')
-        .prefetch_related('replies__sender', 'replies__receiver')
-    )
-    return render(request, 'messaging/inbox.html', {'messages': messages})
+class NotificationViewSet(viewsets.ModelViewSet):
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+    return Notification.objects.filter(recipient=self.request.user)
+
+
+class MessageHistoryViewSet(viewsets.ModelViewSet):
+    queryset = MessageHistory.objects.all()
+    serializer_class = MessageHistorySerializer
