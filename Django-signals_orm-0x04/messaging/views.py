@@ -42,8 +42,8 @@ def inbox(request):
     """
     messages = (
         Message.objects.filter(receiver=request.user, parent_message__isnull=True)
-        .select_related('sender', 'receiver')  
-        .prefetch_related('replies__sender', 'replies__receiver')  
+        .select_related('sender', 'receiver')
+        .prefetch_related('replies__sender', 'replies__receiver')
     )
 
     return render(request, 'messaging/inbox.html', {'messages': messages})
