@@ -1,5 +1,6 @@
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save, pre_save, post_delete
 from django.dispatch import receiver
+from django.contrib.auth.models import User
 from .models import Message, Notification, MessageHistory
 
 
@@ -23,9 +24,23 @@ def log_message_edits(sender, instance, **kwargs):
                 # Log the old content to history
                 MessageHistory.objects.create(
                     message=old_instance,
-                    old_content=old_instance.content
+                    old_content=old_instance.content,
+                    edited_by=instance.edited_by  # optional, only if set manually in views
                 )
                 # Mark message as edited
                 instance.edited = True
         except Message.DoesNotExist:
-            pass 
+            pass
+
+
+@receiver(post_delete, sender=User)
+def delete_related_user_data(sender, instance, **kwargs):
+    # Delete messages sent or received by the user
+    Message.objects.filter(sender=instance).delete()
+    Message.objects.filter(receiver=instance).delete()
+
+    # Delete notifications related to the user
+    Notification.objects.filter(user=instance).delete()
+
+    # Delete message history the user edited
+    MessageHistory.objects.filter(edited_by=instance).delete()
