@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Exit on error
+set -e
+
+echo "Starting Minikube..."
+minikube start
+
+echo "Checking cluster info..."
+kubectl cluster-info
+
+echo "Retrieving pods..."
+kubectl get pods --all-namespaces
