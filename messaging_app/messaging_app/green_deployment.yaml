@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: django-container
-        image: your-django-image:latest  # Replace with your actual image
+        image: chijongweb/django-messaging-app:1.0
         ports:
         - containerPort: 8000
