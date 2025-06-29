@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+
+DEPLOYMENT_NAME="django-messaging-app"
+NAMESPACE="default"  
+
+echo "Scaling deployment '$DEPLOYMENT_NAME' to 3 replicas..."
+kubectl scale deployment $DEPLOYMENT_NAME --replicas=3 -n $NAMESPACE
+
+echo "Waiting for pods to be ready..."
+kubectl rollout status deployment/$DEPLOYMENT_NAME -n $NAMESPACE
+
+echo "Listing pods..."
+kubectl get pods -l app=messaging-app -n $NAMESPACE
+
+# Load testing with wrk - change URL as needed
+echo "Running load test on the app (wrk)..."
+wrk -t2 -c100 -d10s http://localhost:8000/ || echo "Make sure your app is accessible from wrk"
+
+echo "Displaying resource usage (kubectl top pods)..."
+kubectl top pods -n $NAMESPACE
