@@ -47,8 +47,23 @@ jobs:
         source venv/bin/activate
         pip install --upgrade pip
         pip install -r messaging_app/requirements.txt
+        pip install flake8 coverage
 
-    - name: Run tests
+    - name: Lint with flake8
       run: |
         source venv/bin/activate
-        pytest messaging_app/tests
+        flake8 messaging_app
+      continue-on-error: false
+
+    - name: Run tests with coverage
+      run: |
+        source venv/bin/activate
+        coverage run -m pytest messaging_app/tests
+        coverage report
+        coverage html
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: html-coverage-report
+        path: htmlcov/
