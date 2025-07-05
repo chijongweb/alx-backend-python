@@ -8,26 +8,32 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git credentialsId: 'github-creds', url: 'https://github.com/chijongweb/alx-backend-python.git'
+                
+                sh 'git branch'  
             }
         }
 
         stage('Set Up Python Environment') {
             steps {
+                
                 sh 'python3 -m venv $VENV_DIR'
-                sh './$VENV_DIR/bin/pip install --upgrade pip'
-                sh './$VENV_DIR/bin/pip install -r messaging_app/requirements.txt'
+
+                
+                sh './$VENV_DIR/bin/pip3 install --upgrade pip'
+                sh './$VENV_DIR/bin/pip3 install -r messaging_app/requirements.txt'
             }
         }
 
         stage('Run Tests') {
             steps {
+                
                 sh './$VENV_DIR/bin/pytest messaging_app/tests --junitxml=report.xml'
             }
         }
 
         stage('Publish Report') {
             steps {
+                
                 junit 'report.xml'
             }
         }
